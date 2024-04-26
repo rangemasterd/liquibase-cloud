@@ -1,0 +1,71 @@
+name: Build
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev, main ]
+
+env:
+  JDK_VERSION: '17'
+  JDK_DISTRIBUTION: 'temurin'
+
+jobs:
+  verify:
+    name: Verify Context
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.base.ref == 'main' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JDK_VERSION }}
+          distribution: ${{ env.JDK_DISTRIBUTION }}
+          cache: 'maven'
+
+      - name: Check Version
+        run: |
+          MVN_VERSION=$(./mvnw --quiet --define forceStdout --define expression=project.version help:evaluate)
+
+          origin_tag=$(git ls-remote --tags --quiet origin "refs/tags/v$MVN_VERSION")
+
+          if [ -z "$origin_tag" ]; then
+            exit 0
+          fi
+
+          echo "Tag $origin_tag already present, did you forget to bump up the version? Exiting..."
+          exit 1
+
+  build_and_test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JDK_VERSION }}
+          distribution: ${{ env.JDK_DISTRIBUTION }}
+          cache: 'maven'
+
+      - name: Install
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --show-version \
+            --define maven.test.skip=true \
+            clean \
+            install
+
+      - name: Unit Test
+        run: |
+          ./mvnw \
+            --batch-mode \
+            test

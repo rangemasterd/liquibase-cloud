@@ -17,6 +17,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import it.rangemaster.liquicloud.SecretPath;
+import it.rangemaster.liquicloud.Secrets;
+import it.rangemaster.liquicloud.SecretsAccessor;
+import it.rangemaster.liquicloud.SecretsPrinter;
+
 @ExtendWith(MockitoExtension.class)
 public class SecretsPrinterTest {
 

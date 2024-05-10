@@ -5,8 +5,8 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>it.rangemaster.liquibase.cloud</groupId>
-    <artifactId>secretaccessor-provider</artifactId>
+    <groupId>it.rangemaster.liquicloud</groupId>
+    <artifactId>secretaccessor</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
 
@@ -60,6 +60,7 @@
 
     <modules>
         <module>commons</module>
+        <module>provider-gcp</module>
     </modules>
 
     <build>
@@ -69,7 +70,6 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surfire-plugin.version}</version>
                 </plugin>
-                <!-- Manage the project multi-module version -->
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>flatten-maven-plugin</artifactId>
@@ -96,6 +96,40 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${maven-shade-plugin.version}</version>
+                    <configuration>
+                        <skip>true</skip>
+                        <minimizeJar>true</minimizeJar>
+                        <!-- Exclude signed JARs from uber jar -->
+                        <filters>
+                            <filter>
+                                <artifact>*:*</artifact>
+                                <excludes>
+                                    <exclude>META-INF/*.SF</exclude>
+                                    <exclude>META-INF/*.DSA</exclude>
+                                    <exclude>META-INF/*.RSA</exclude>
+                                </excludes>
+                            </filter>
+                        </filters>
+                        <transformers>
+                            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <mainClass>${app.mainclass}</mainClass>
+                            </transformer>
+                        </transformers>
+                    </configuration>
+                    <executions>
+                      <execution>
+                        <phase>package</phase>
+                        <goals>
+                          <goal>shade</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
             </plugins>
         </pluginManagement>
     </build>

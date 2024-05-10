@@ -7,6 +7,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 
+import it.rangemaster.liquicloud.Secrets;
+
 public class SecretsTest {
 
     @ParameterizedTest

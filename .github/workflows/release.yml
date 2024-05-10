@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  JDK_VERSION: '17'
+  JDK_DISTRIBUTION: 'temurin'
+
+jobs:
+  verify:
+    name: Verify Context
+    runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.setversion.outputs.mvn_version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JDK_VERSION }}
+          distribution: ${{ env.JDK_DISTRIBUTION }}
+          cache: 'maven'
+
+      - name: Set Release Version
+        id: setversion
+        run: |
+          MVN_VERSION=$(./mvnw --quiet --define forceStdout --define expression=project.version help:evaluate)
+
+          origin_tag=$(git ls-remote --tags --quiet origin "refs/tags/v$MVN_VERSION")
+
+          if [ -z "$origin_tag" ]; then
+            echo "Set version: $MVN_VERSION"
+            echo "mvn_version=$MVN_VERSION" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Tag $origin_tag already present, did you forget to bump up the version? Exiting..."
+          exit 1
+
+  build_and_publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    needs: verify
+    permissions:
+      contents: 'write'
+      discussions: 'write'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JDK_VERSION }}
+          distribution: ${{ env.JDK_DISTRIBUTION }}
+          cache: 'maven'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Install
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --show-version \
+            --define maven.test.skip=true \
+            clean \
+            install
+
+      - name: Unit Test
+        run: |
+          ./mvnw \
+            --show-version \
+            --batch-mode \
+            test
+
+      - name: Publish @ GCP
+        uses: docker/build-push-action@v5
+        with:
+          build-args: |
+            CLOUD_PROVIDER=gcp
+            APP_VERSION=${{ needs.verify.outputs.release_version }}
+          push: true
+          tags: rangemasterd/liquicloud:${{ needs.verify.outputs.release_version }}-gcp
+
+      - name: Github Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "v${{ needs.verify.outputs.release_version }}" --generate-notes

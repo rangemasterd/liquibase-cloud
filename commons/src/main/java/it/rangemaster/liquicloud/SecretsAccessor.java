@@ -1,4 +1,4 @@
-package it.rangemaster.liquibase;
+package it.rangemaster.liquicloud;
 
 import java.io.IOException;
 
@@ -10,11 +10,11 @@ public interface SecretsAccessor {
     /**
      * Retrieves secrets based on the provided paths.
      *
-     * @param url the url secret path
-     * @param username the username secret path
-     * @param password the password secret path
+     * @param urlPath the url secret path
+     * @param usernamePath the username secret path
+     * @param passwordPath the password secret path
      * @return The secrets retrieved based on the specified paths.
      * @throws IOException If an I/O error occurs while retrieving the secrets.
      */
-    Secrets retrieve(SecretPath url, SecretPath username, SecretPath password) throws IOException;
+    Secrets retrieve(SecretPath urlPath, SecretPath usernamePath, SecretPath passwordPath) throws IOException;
 }

@@ -6,8 +6,8 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-          <groupId>it.rangemaster.liquibase.cloud</groupId>
-          <artifactId>secretaccessor-provider</artifactId>
+          <groupId>it.rangemaster.liquicloud</groupId>
+          <artifactId>secretaccessor</artifactId>
           <version>${revision}</version>
     </parent>
 

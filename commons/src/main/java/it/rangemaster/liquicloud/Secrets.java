@@ -1,4 +1,4 @@
-package it.rangemaster.liquibase;
+package it.rangemaster.liquicloud;
 
 /**
  * Represents sensitive information for accessing the DB

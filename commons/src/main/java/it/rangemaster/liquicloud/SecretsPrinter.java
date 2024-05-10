@@ -1,11 +1,19 @@
-package it.rangemaster.liquibase;
+package it.rangemaster.liquicloud;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * The SecretsPrinter class is responsible for printing secrets to standard output based on specified paths.
  */
 public class SecretsPrinter {
+
+    private static final Logger logger;
+
+    static {
+        System.setProperty("java.util.logging.SimpleFormatter.format","[%1$tF %1$tT] %5$s %n");
+        logger = Logger.getLogger(SecretsPrinter.class.getName());
+    }
 
     private final SecretsAccessor secretsAccessor;
 
@@ -28,6 +36,8 @@ public class SecretsPrinter {
         SecretPath dbUrlPath = new SecretPath(args[0]);
         SecretPath dbUsernamePath = new SecretPath(args[1]);
         SecretPath dbPasswordPath = new SecretPath(args[2]);
+
+        logger.info("Retrieving secrets by " + secretsAccessor.getClass().getSimpleName());
 
         Secrets secrets = secretsAccessor.retrieve(dbUrlPath, dbUsernamePath, dbPasswordPath);
 

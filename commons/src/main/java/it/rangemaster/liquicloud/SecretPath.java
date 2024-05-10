@@ -1,4 +1,4 @@
-package it.rangemaster.liquibase;
+package it.rangemaster.liquicloud;
 
 /**
  * The SecretPath record represents a path to a secret, such as a URL, username, or password.
